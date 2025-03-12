@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcul de Plenum Riv'Air</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1e1e1e;
+            color: #ddd;
+            text-align: center;
+            margin: 20px;
+        }
+
+        .form-container, .table-container {
+            width: 100%;
+            max-width: fit-content;
+            margin: 20px auto;
+            text-align: left;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            background-color: #2c2c2c;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            table-layout: auto;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="https://i.postimg.cc/rFGVFC1G/Adobe-Express-file.png" alt="Logo" class="logo">
+    </div>
+    <div class="form-container">
+        <label for="modele">Modèle de Gainable :</label>
+        <select id="modele" onchange="remplirDimensions()">
+            <option value="">Sélectionner un modèle</option>
+        </select>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Largeur (mm)</th>
+                    <th>Hauteur (mm)</th>
+                    <th>Profondeur (mm)</th>
+                    <th>Bride</th>
+                    <th>Nombre de Piquages</th>
+                    <th>Ø des Piquages (mm)</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="number" class="largeur" oninput="calculer(this)"></td>
+                    <td><input type="number" class="hauteur" oninput="calculer(this)"></td>
+                    <td><input type="number" class="profondeur" oninput="calculer(this)"></td>
+                    <td>
+                        <select class="bride" onchange="calculer(this)">
+                            <option value="non">Non</option>
+                            <option value="oui">Oui</option>
+                        </select>
+                    </td>
+                    <td><input type="number" class="nbPiquages" min="1" max="15" oninput="calculer(this)"></td>
+                    <td><input type="number" class="diamPiquage" min="1" max="500" oninput="calculer(this)"></td>
+                    <td>
+                        <select class="type" onchange="calculer(this)">
+                            <option value="Axial">Axial</option>
+                            <option value="Latéral">Latéral</option>
+                        </select>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+    <div class="resultats">
+        <h3>Résultats :</h3>
+        <p><strong>Dimensions Gainable :</strong> <span id="dimensionsGainable">-</span></p>
+        <p><strong>Plénum côté Gainable :</strong> <span id="pleniumGainable">-</span></p>
+        <p><strong>Plénum côté Piquages :</strong> <span id="pleniumPiquages">-</span></p>
+        <p><strong>Devis :</strong> <span id="devis">-</span></p>
+<div class="copy-container">
+    <button class="copy-button" onclick="copierDevis()">COPIER</button>
+</div>
+
+      
+
+    </div>
+  
+ <script>
+
+        const baseDonnees = [
+
+            { reference: "DAIKIN FBA71A9  (SOUFFLAGE)", largeur: 954, hauteur: 210 },
+
+            { reference: "DAIKIN FBA71A9  (REPRISE)", largeur: 792, hauteur: 178 },
+
+            { reference: "DAIKIN FXSQ50A  (SOUFFLAGE)", largeur: 492, hauteur: 178 },
+
+            { reference: "MI2-45T2DN1 (SOUFFLAGE)", largeur: 732, hauteur: 145 },
+
+            { reference: "MI2-45T2DN1 (REPRISE)", largeur: 820, hauteur: 200 },
+
+            { reference: "MI2-56T2DN1 (SOUFFLAGE)", largeur: 952, hauteur: 145 },
+
+            { reference: "MI2-56T2DN1 (REPRISE)", largeur: 1040, hauteur: 200 },
+
+            { reference: "MI2-71T2DN1 (SOUFFLAGE)", largeur: 933, hauteur: 179 },
+
+            { reference: "MI2-71T2DN1 (REPRISE)", largeur: 1035, hauteur: 260 },
+
+            { reference: "MI2-160T1DN1 (SOUFFLAGE)", largeur: 930, hauteur: 251 },
+
+            { reference: "MI2-160T1DN1 (REPRISE)", largeur: 1073, hauteur: 339 },
+
+            { reference: "MI2-200T1DN1 (SOUFFLAGE)", largeur: 936, hauteur: 380 },
+
+            { reference: "MI2-200T1DN1 (REPRISE)", largeur: 1120, hauteur: 344 }
+
+        ];
+
+ 
+
+        function chargerModeles() {
+
+            let select = document.getElementById("modele");
+
+            baseDonnees.forEach(modele => {
+
+                let option = document.createElement("option");
+
+                option.value = modele.reference;
+
+                option.textContent = modele.reference;
+
+                select.appendChild(option);
+
+            });
+
+        }
+
+ 
+
+        function remplirDimensions() {
+
+            let select = document.getElementById("modele").value;
+
+            let modele = baseDonnees.find(m => m.reference === select);
+
+            if (modele) {
+
+                document.querySelector(".largeur").value = modele.largeur;
+
+                document.querySelector(".hauteur").value = modele.hauteur;
+
+                calculer();
+
+            }
+
+        }
+
+ 
+
+        function calculer() {
+
+            let largeur = parseInt(document.querySelector(".largeur").value) || 0;
+
+            let hauteur = parseInt(document.querySelector(".hauteur").value) || 0;
+
+            document.getElementById("dimensionsGainable").textContent = `${largeur} x ${hauteur} mm`;
+
+        }
+
+ 
+
+        chargerModeles();
+
+   
+
+    function calculer(element) {
+
+        let row = element.closest("tr");
+
+        let largeur = parseInt(row.querySelector(".largeur").value) || 0;
+
+        let hauteur = parseInt(row.querySelector(".hauteur").value) || 0;
+
+        let profondeur = parseInt(row.querySelector(".profondeur").value) || 0;
+
+        let bride = row.querySelector(".bride").value;
+
+        let nbPiquages = parseInt(row.querySelector(".nbPiquages").value) || 0;
+
+        let diamPiquage = parseInt(row.querySelector(".diamPiquage").value) || 0;
+
+        let type = row.querySelector(".type").value || "-"; // Récupération du type
+
+ 
+
+        let ajustementBride = bride === "oui" ? 6 : 0;
+
+        let largeurAvecBride = largeur + ajustementBride;
+
+        let hauteurAvecBride = hauteur + ajustementBride;
+
+        let largeurFinale = Math.max(largeurAvecBride, 30 + nbPiquages * (diamPiquage + 60) - 30);
+
+        let hauteurFinale = Math.max(hauteurAvecBride, diamPiquage + 30);
+
+ 
+
+        // Vérification si évasé ou non
+
+        let estEvasé = largeurFinale > largeurAvecBride || hauteurFinale > hauteurAvecBride;
+
+        let texteEvasé = estEvasé ? " Évasé" : ""; // Ajout de "Évasé" uniquement si condition remplie
+
+ 
+
+        // Ajout systématique du texte "nbPiquages ØdiamPiquage"
+
+        let infoPiquages = ` - ${nbPiquages} Ø${diamPiquage}${texteEvasé}`;
+
+ 
+
+        document.getElementById("dimensionsGainable").textContent = `${largeur} x ${hauteur} mm`;
+
+        document.getElementById("pleniumGainable").textContent = `${largeurAvecBride} x ${hauteurAvecBride} mm`;
+
+        document.getElementById("pleniumPiquages").textContent = `${largeurFinale} x ${hauteurFinale} x ${profondeur} mm / ${type}${infoPiquages}`;
+      
+    
+      
+      document.getElementById("devis").textContent = `PLENUM GALVA ${largeurAvecBride}${largeurAvecBride !== largeurFinale ? " / " + largeurFinale : ""} x ${hauteurAvecBride}${hauteurAvecBride !== hauteurFinale ? " / " + hauteurFinale : ""} x ${profondeur} P ${type} ${infoPiquages}`;
+
+
+
+
+
+    }
+   
+   function copierDevis() {
+    let devisTexte = document.getElementById("devis").textContent;
+    navigator.clipboard.writeText(devisTexte).then(() => {
+        alert("Devis copié !");
+    }).catch(err => {
+        console.error("Erreur lors de la copie :", err);
+    });
+}
+
+
+    </script>
+
+</body>
+
+</html>
