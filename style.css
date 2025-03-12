@@ -78,13 +78,19 @@
 
 // BOUTONS MENU 
 
+html, body {
+    height: 100%; /* Assurez-vous que le body occupe toute la hauteur de la page */
+    margin: 0; /* Enlevez toute marge par défaut */
+    padding: 0; /* Enlevez tout padding */
+}
+
 .menu-container {
-    position: fixed; /* Utilisation de fixed pour les fixer dans le coin */
+    position: fixed; /* Utilise 'fixed' pour maintenir les boutons en haut à droite */
     top: 20px;
     right: 20px;
     display: flex;
     gap: 15px;
-    z-index: 10; /* Assurez-vous que les boutons restent au-dessus des autres éléments */
+    z-index: 10; /* Assurez-vous qu'ils sont au-dessus des autres éléments */
 }
 
 .menu-button {
